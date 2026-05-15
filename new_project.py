@@ -44,6 +44,14 @@ st.markdown("""
     color: white;
 }
 
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
 h1, h2, h3, h4, h5, h6, p, label {
     color: white !important;
 }
