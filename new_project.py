@@ -2,6 +2,8 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
+
+# Page Config
 st.set_page_config(
     page_title="AI SQL Assistant",
     page_icon="🧠",
@@ -52,8 +54,7 @@ div[data-testid="metric-container"] {
 </style>
 """, unsafe_allow_html=True)
 
-
-# Sidebar
+# Title
 st.markdown(
     """
     <h1 style='text-align: center;'>
@@ -67,38 +68,41 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 st.caption(
     "Suggested queries: top customers • total revenue • highest revenue city • best selling products"
 )
-# Button
+
+# Quick Questions
 st.write("### Quick Questions")
 
 c1, c2, c3 = st.columns(3)
 
 with c1:
     if st.button("Top Customers"):
-        question = "top customers"
+        st.session_state.question = "top customers"
 
 with c2:
     if st.button("Total Revenue"):
-        question = "total revenue"
+        st.session_state.question = "total revenue"
 
 with c3:
     if st.button("Best Selling Products"):
-        question = "best selling products"
+        st.session_state.question = "best selling products"
 
-
-
+# Input Box
 question = st.text_input(
     "Ask your database question:",
-    placeholder="Try: top customers"
+    placeholder="Try: top customers",
+    key="question"
 )
 
+# Generate Button
 run_query = st.button("Generate SQL")
 
+# Run Query
 if question and run_query:
+
+    # SQL Logic
     if "top customers" in question.lower():
 
         sql = """
@@ -189,58 +193,56 @@ if question and run_query:
 
         sql = "SELECT * FROM customers;"
 
-
-
-
-
     # Show SQL
     st.subheader("Generated SQL:")
     st.code(sql, language="sql")
 
-# Connect database
+    # Connect Database
     conn = sqlite3.connect("company.db")
-    
-    # Execute query
+
+    # Execute Query
     df = pd.read_sql_query(sql, conn)
+
     st.divider()
-    
+
     # Show Results
     st.subheader("Query Results:")
     st.dataframe(df)
+
     st.success("Query executed successfully ✅")
-  
 
-# Dynamic Charts
-if "total_spent" in df.columns:
+    # Dynamic Charts
+    if "total_spent" in df.columns:
 
-    fig, ax = plt.subplots(figsize=(8,4))
-    ax.bar(df["name"], df["total_spent"])
-    ax.set_title("Top Customers")
-    ax.set_xlabel("Customers")
-    ax.set_ylabel("Amount")
+        fig, ax = plt.subplots(figsize=(8,4))
+        ax.bar(df["name"], df["total_spent"])
+        ax.set_title("Top Customers")
+        ax.set_xlabel("Customers")
+        ax.set_ylabel("Amount")
 
-    st.pyplot(fig)
+        st.pyplot(fig)
 
-elif "revenue" in df.columns:
+    elif "revenue" in df.columns:
 
-    fig, ax = plt.subplots(figsize=(8,4))
-    ax.bar(df["city"], df["revenue"])
-    ax.set_title("Revenue By City")
-    ax.set_xlabel("City")
-    ax.set_ylabel("Revenue")
+        fig, ax = plt.subplots(figsize=(8,4))
+        ax.bar(df["city"], df["revenue"])
+        ax.set_title("Revenue By City")
+        ax.set_xlabel("City")
+        ax.set_ylabel("Revenue")
 
-    st.pyplot(fig)
+        st.pyplot(fig)
 
-elif "total_sales" in df.columns:
+    elif "total_sales" in df.columns:
 
-    fig, ax = plt.subplots(figsize=(8,4))
-    ax.bar(df["product_name"], df["total_sales"])
-    ax.set_title("Best Selling Products")
-    ax.set_xlabel("Products")
-    ax.set_ylabel("Sales")
+        fig, ax = plt.subplots(figsize=(8,4))
+        ax.bar(df["product_name"], df["total_sales"])
+        ax.set_title("Best Selling Products")
+        ax.set_xlabel("Products")
+        ax.set_ylabel("Sales")
 
-    st.pyplot(fig)
+        st.pyplot(fig)
 
+    conn.close()
 
 # KPI Cards
 st.divider()
@@ -264,6 +266,7 @@ with col3:
         label="🛒 Products",
         value="8"
     )
+
 # Footer
 st.write("---")
 st.caption("Built with Python, Streamlit, SQLite, Pandas, and Matplotlib")
